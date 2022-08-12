@@ -76,6 +76,13 @@ VizPrez.prototype.initializeLayout = function(zoneWrapper, scene) {
   var layout = scene.layout;
   layout = layout.sort(function(a,b) { return a.zone - b.zone });
   removeAllChildNodes(zoneWrapper);
+
+  if (scene.backgroundColor) {
+    zoneWrapper.style.backgroundColor = scene.backgroundColor;
+  }
+  else {
+    zoneWrapper.style.backgroundColor = null;
+  }
   
   // Reset zone wrapper classes
   for (var i = 0; i < this.grids.length; i++) {
