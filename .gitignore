@@ -14,6 +14,7 @@
 !/media/video/.keep
 !/media/images/.keep
 !/media/images/readme
+!/media/images/readme/*
 
 # Ignore demo JS
 /js/demo
