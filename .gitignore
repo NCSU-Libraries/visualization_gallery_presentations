@@ -13,6 +13,7 @@
 !/media/audio/.keep
 !/media/video/.keep
 !/media/images/.keep
+!/media/images/readme
 
 # Ignore demo JS
 /js/demo
@@ -23,3 +24,5 @@
 **/*.zip
 *.zip
 
+/*demo
+/*demo/**
