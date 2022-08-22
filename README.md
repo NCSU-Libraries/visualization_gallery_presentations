@@ -8,11 +8,24 @@ An HTML/CSS/Javascript framework for creating multimedia presentations in the vi
 
 ### Demo presentation (in Google Drive)
 
-> TK - LINK TO DEMO CONTENT AND INSTRUCTIONS TO GET IT RUNNING
+A demo presentation is avaialble for local testing, experimentation, etc. The presentation runs in Google Chrome and should work on any computer, (extermely slow computers may have issues with video quality) content will scall to fit your display.
+
+1. [Download the demo presentation  \(`vizstudio_presentations_demo.zip`\) from Google drive](https://drive.google.com/file/d/1K1UaQbxVNHEbwRK1D84lQqUnlFO68uUw/view?usp=sharinghttps://drive.google.com/file/d/1K1UaQbxVNHEbwRK1D84lQqUnlFO68uUw/view?usp=sharing)
+2. Unzip the file to a convenient location on your computer.
+3. Open Google Chrome.*
+4. Press F11 to enter full screen mode.
+5. Open the file `demo.html` in Chrome.
+6. Press any key to begin the presentation. Note that the display will scale down to fit your display, so things will look small.
+7. Press N to move to the next scene, or B to move back to the previous scene.
+
+> \* It should also work in other browsers but is only consistently tested in Chrome
 
 ### Keyboard controls
 
-> TK
+* Any key to start presentation
+* N - move to the next scene
+* B - move back to the previous scene
+* Spacebar - pause/resume audio and video
 
 
 ## Building a presentation
