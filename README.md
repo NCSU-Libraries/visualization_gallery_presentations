@@ -18,7 +18,7 @@ A demo presentation is avaialble for local testing, experimentation, etc. The pr
 6. Press any key to begin the presentation. Note that the display will scale down to fit your display, so things will look small.
 7. Press N to move to the next scene, or B to move back to the previous scene.
 
-> \* It should also work in other browsers but is only consistently tested in Chrome
+* \* It should also work in other browsers but is only consistently tested in Chrome *
 
 ### Keyboard controls
 
@@ -36,7 +36,7 @@ A demo presentation is avaialble for local testing, experimentation, etc. The pr
 
 * A scene is a set of elements displayed at the same time in different positions around the room, according to a prescribed layout. Elements can be images, video, or native web content (HTML + Javascript + CSS).
 
-   > NOTE: Use of standalone audio content is planned but not yet supported.
+   > TODO: Use of standalone audio content is planned but not yet supported.
 
 * Layouts are defined using a grid system that divides the room into zones of equal widths.
 The default grid divides the room into 12 zones, which can be combined to create layouts of 2, 3 ,4 , 6 and 12 equal-width zones, or any number of combinations of mixed-width zones. 8- and 10-zone grids are also available.
