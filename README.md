@@ -18,7 +18,7 @@ A demo presentation is avaialble for local testing, experimentation, etc. The pr
 6. Press any key to begin the presentation. Note that the display will scale down to fit your display, so things will look small.
 7. Press N to move to the next scene, or B to move back to the previous scene.
 
-* \* It should also work in other browsers but is only consistently tested in Chrome *
+*\*It should also work in other browsers but is only consistently tested in Chrome*
 
 ### Keyboard controls
 
