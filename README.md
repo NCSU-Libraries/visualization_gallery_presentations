@@ -10,7 +10,7 @@ An HTML/CSS/Javascript framework for creating multimedia presentations in the vi
 
 A demo presentation is avaialble for local testing, experimentation, etc. The presentation runs in Google Chrome and should work on any computer, (extermely slow computers may have issues with video quality) content will scall to fit your display.
 
-1. <a heref="https://drive.google.com/file/d/1K1UaQbxVNHEbwRK1D84lQqUnlFO68uUw/view?usp=sharinghttps://drive.google.com/file/d/1K1UaQbxVNHEbwRK1D84lQqUnlFO68uUw/view?usp=sharing" target="_blank">Download the demo presentation  \(**vizstudio_presentations_demo.zip**\) from Google drive</a>
+1. <a href="https://drive.google.com/file/d/1K1UaQbxVNHEbwRK1D84lQqUnlFO68uUw/view?usp=sharinghttps://drive.google.com/file/d/1K1UaQbxVNHEbwRK1D84lQqUnlFO68uUw/view?usp=sharing" target="_blank">Download the demo presentation  \(**vizstudio_presentations_demo.zip**\) from Google drive</a>
 2. Unzip the file to a convenient location on your computer.
 3. Open Google Chrome.*
 4. Press F11 to enter full screen mode.
