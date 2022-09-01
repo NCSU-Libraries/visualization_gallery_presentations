@@ -24,12 +24,9 @@
   background:  black;
 }
 
-
-
-
 /* Additional styles used for media players, images, and wrapper elements */
 
-.zone .wrapper {
+.zone > .wrapper {
   position: absolute;
   top: 0;
   left: 0;
@@ -38,19 +35,26 @@
   text-align: center;
 }
 
-.zone .wrapper img.vertical {
+.zone > .wrapper img.vertical {
   height: 100%;
 }
 
-.zone .wrapper img.horizontal {
+.zone > .wrapper img, .zone > .wrapper video {
+  height: 1080px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  
+  transform: translate(-50%,-50%);
+  /* or 3d alternative if you will add animations (smoother transitions) */
+  transform: translate3d(-50%,-50%,0);
+}
+
+.zone > .wrapper img.horizontal {
   width: 100%;
 }
 
-.zone .wrapper img {
-  height: 1080px;
-}
-
-.zone .wrapper p {
+.zone > .wrapper p {
   line-height: 1em;
   margin:  0;
   padding:  0;
@@ -66,7 +70,7 @@
   left:  0;
 }
 
-.zone .wrapper .label {
+.zone > .wrapper .label {
   position:  absolute;
   top: 60%;
   left:  0;
@@ -78,47 +82,6 @@
   opacity: 0.4;
   font-family: monospace;
 }
-
-/*
-.zone .wrapper p.pink {
-  color:  #fc5ac5;
-}
-
-.zone .wrapper p.blue {
-  color:  #b4e4f6;
-}
-*/
-
-.player-wrapper {
-  padding: 0;
-  margin: 0 auto;
-  /* width: 1536px; */
-  width: 1280px;
-}
-
-.zone.span-2 .player-wrapper {
-  width: 2560px;
-}
-
-.player-wrapper video, .wrapper video {
-  height: 1080px;
-  /*max-width: 100%;*/
-}
-
-
-/*#zone-1 .player-wrapper.single-source video,
-#zone-2 .player-wrapper.single-source video,
-#zone-3 .player-wrapper.single-source video,
-#zone-1-2 .player-wrapper.single-source video,
-#zone-2-3 .player-wrapper.single-source video,
-#zone-1-2-3 .player-wrapper.single-source video,
-#zone-4 .player-wrapper.single-source video,
-#zone-8 .player-wrapper.single-source video,
-#zone-9 .player-wrapper.single-source video,
-#zone-10 .player-wrapper.single-source video,
-#zone-9-10 .player-wrapper.single-source video {
-  height: 1080px;
-}*/
 
 .controls {
   clear: both;

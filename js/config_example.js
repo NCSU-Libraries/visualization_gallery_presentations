@@ -11,6 +11,51 @@ function config() {
   // Below are some examples of defining scenes with different layouts and content types
 
 
+  // This scene has 6 wide zones.
+  // Each zone in this layout spans 2 zones. Note that the 'zone' values skip every other number.
+  conf.addScene({
+    grid: 10,
+    layout: [
+      { zone: 1, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 3, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 5, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 7, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 9, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' }
+    ]
+  })
+
+
+  // This scene has 6 wide zones.
+  // Each zone in this layout spans 2 zones. Note that the 'zone' values skip every other number.
+  conf.addScene({
+    layout: [
+      { zone: 1, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 3, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 5, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 7, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 9, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 11, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' }
+    ]
+  })
+
+
+  // This scene has 8 zones.
+  // Each zone in this layout spans 2 zones. Note that the 'zone' values skip every other number.
+  conf.addScene({
+    grid: 8,
+    layout: [
+      { zone: 1, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 3, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 4, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 5, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 6, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 7, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 8, contentType: 'image', filepath: 'media/images/target_2-10.png' }
+    ]
+  })
+
+
   // This scene uses 12 zones, alternating image and video.
   // The 'contentType' values are set to 'image' or 'video' as appropriate
   //   and the 'filepath' values specify where the content files are
@@ -52,20 +97,6 @@ function config() {
   conf.addScene({
     layout: [
       { zone: 1, span: 12, contentType: 'image', filepath: 'media/images/pano.png'}
-    ]
-  })
-
-
-  // This scene has 6 wide zones.
-  // Each zone in this layout spans 2 zones. Note that the 'zone' values skip every other number.
-  conf.addScene({
-    layout: [
-      { zone: 1, span: 2, contentType: 'image', filepath: 'media/images/beach_2-10.png' },
-      { zone: 3, span: 2, contentType: 'image', filepath: 'media/images/desert_2-10.png' },
-      { zone: 5, span: 2, contentType: 'image', filepath: 'media/images/forest_2-10.png' },
-      { zone: 7, span: 2, contentType: 'image', filepath: 'media/images/prarie_2-10.png' },
-      { zone: 9, span: 2, contentType: 'image', filepath: 'media/images/swamp_2-10.png' },
-      { zone: 11, span: 2, contentType: 'image', filepath: 'media/images/tundra_2-10.png' }
     ]
   })
 
