@@ -81,6 +81,8 @@ The 8-zone grid divides the display into 8 zones, each 1920 pixels wide.
 
 ![8-zone grid](/media/images/readme/8-grid.png "8-zone grid")
 
+> Note that the zone dimensions for the 8-zone grid (1920 x 1080 pixels) correspond to 1080p (Full HD) video display resolution.
+
 As with the 12-zone grid, many other layouts are possible using spans.
 
 
