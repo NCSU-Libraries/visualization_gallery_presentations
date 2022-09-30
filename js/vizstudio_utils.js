@@ -9,15 +9,21 @@ function fadeOut(element, duration, callback) {
 }
 
 function fade(direction, element, duration, callback) {
-  duration ||= 1000;
-  duration = duration < 20 ? 20 : duration;
   direction = (direction == 'in') ? 'in' : 'out';
   var opacityInterval = 0.05;
-  var stepInterval = Math.ceil(duration / 20);
+
+  if (duration !== 0) {
+    duration ||= 1000;
+  }
+  else {
+    opacityInterval = 1;
+  }
+
+  var stepInterval = duration > 20 ? Math.ceil(duration / 20) : duration;
   var op = (direction == 'in') ? 0 : 1;  // initial opacity
-  
   element.style.display = 'block';
 
+  // duration = duration < 20 ? 20 : duration;
   var timer = setInterval(function () {
     if ((direction == 'in' && op >= 1) || (direction == 'out' && op <= 0)) {
       clearInterval(timer);
@@ -125,3 +131,11 @@ function increment(value, length) {
   return (value + 1) % length;
 }
 
+function modulo(a,n) {
+  return ((a % n ) + n ) % n;
+}
+
+function precise(number, precision) {
+  let p = Math.floor(precision);
+  return Number.parseFloat(number).toPrecision(p);
+}

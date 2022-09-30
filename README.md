@@ -1,6 +1,6 @@
 # Vizstudio Presentations
 
-An HTML/CSS/Javascript framework for creating multimedia presentations in the visualization Studio at D.H. Hill, Jr. Library.
+An HTML/CSS/Javascript framework for creating multimedia presentations in the Visualization Studio at D.H. Hill, Jr. Library.
 
 > This project is a work in progress. If you have ideas for new functionality, please submit an issue.
 

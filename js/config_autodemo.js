@@ -18,9 +18,26 @@ function config() {
       { zone: 5, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
       { zone: 7, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
       { zone: 9, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
-      { zone: 11, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' }
-    ]
+      { zone: 11, span: 2, contentType: 'image', filepath: 'media/images/target_2-10.png', id: 'test-image1' }
+    ],
+    autoAdvance: 'time',
+    autoAdvanceInterval: 3000
   })
+
+  
+  conf.addScene({
+    layout: [
+      { zone: 1, span: 2, contentType: 'image', filepath: 'media/images/prarie_2-10.png' },
+      { zone: 3, span: 2, contentType: 'image', filepath: 'media/images/beach_2-10.png' },
+      { zone: 5, span: 2, contentType: 'image', filepath: 'media/images/desert_2-10.png' },
+      { zone: 7, span: 2, contentType: 'image', filepath: 'media/images/tundra_2-10.png' },
+      { zone: 9, span: 2, contentType: 'image', filepath: 'media/images/forest_2-10.png' },
+      { zone: 11, span: 2, contentType: 'image', filepath: 'media/images/swamp_2-10.png' }
+    ],
+    autoAdvance: true,
+    autoAdvanceInterval: 3000
+  })
+
 
   // This scene has 8 zones.
   // Each zone in this layout spans 2 zones. Note that the 'zone' values skip every other number.
@@ -30,35 +47,15 @@ function config() {
       { zone: 1, contentType: 'image', filepath: 'media/images/target_2-10.png' },
       { zone: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
       { zone: 3, contentType: 'image', filepath: 'media/images/target_2-10.png' },
-      { zone: 4, contentType: 'image', filepath: 'media/images/target_2-10.png' },
+      { zone: 4, contentType: 'video', filepath: 'media/video/button_pusher.mp4', loop: false, id: 'button-pusher' },
       { zone: 5, contentType: 'image', filepath: 'media/images/target_2-10.png' },
       { zone: 6, contentType: 'image', filepath: 'media/images/target_2-10.png' },
       { zone: 7, contentType: 'image', filepath: 'media/images/target_2-10.png' },
       { zone: 8, contentType: 'image', filepath: 'media/images/target_2-10.png' }
-    ]
-  })
-
-
-
-  conf.addScene({
-    layout: [
-      { zone: 1, contentType: 'image', filepath: 'media/images/target_2-10.png' },
-      { zone: 2, contentType: 'image', filepath: 'media/images/target_2-10.png' },
-      { zone: 3, contentType: 'image', filepath: 'media/images/target_2-10.png' },
-      { zone: 4, contentType: 'image', filepath: 'media/images/target_2-10.png' },
-      { zone: 5, contentType: 'image', filepath: 'media/images/target_2-10.png' },
-      { zone: 6, contentType: 'image', filepath: 'media/images/target_2-10.png' },
-      { zone: 7, contentType: 'image', filepath: 'media/images/target_2-10.png' },
-      { zone: 8, contentType: 'image', filepath: 'media/images/target_2-10.png' },
-      { zone: 9, contentType: 'image', filepath: 'media/images/target_2-10.png' },
-      { zone: 10, contentType: 'image', filepath: 'media/images/target_2-10.png' },
-      { zone: 11, contentType: 'image', filepath: 'media/images/target_2-10.png' },
-      { zone: 12, contentType: 'image', filepath: 'media/images/target_2-10.png' }
-    ]
-  })
-
-  
-
+    ],
+    autoAdvance: true,
+    autoAdvanceMediaId: 'button-pusher'
+  })  
 
 
   // This scene uses 12 zones, alternating image and video.

@@ -38,9 +38,14 @@ function VizPrez(selector, config) {
     this.config = config;
     this.scenes = config.scenes;
 
-    console.log(this.scenes);
+    if (config.transitionInterval === 0) {
+      this.transitionInterval = 0;
+    }
+    else {
+      this.transitionInterval = config.transitionInterval || 1000;
+    }
+    console.log(this.transitionInterval);
 
-    this.transitionInterval = config.transitionInterval || 1000;
     this.initialize();
     this.enableKeyboardConrol();
   }
@@ -83,6 +88,10 @@ VizPrez.prototype.initializeLayout = function(zoneWrapper, scene) {
   else {
     zoneWrapper.style.backgroundColor = null;
   }
+
+  if (scene.backgroundImage) {
+    zoneWrapper.style.backgroundImage = "url('" + scene.backgroundImage + "')";
+  }
   
   // Reset zone wrapper classes
   for (var i = 0; i < this.grids.length; i++) {
@@ -115,8 +124,21 @@ VizPrez.prototype.loadContent = function(zoneWrapper, scene) {
 
   var layout = scene.layout;
   layout = layout.sort(function(a,b) { return a.zone - b.zone });
+  
+  zoneWrapper.removeAttribute('data-auto-advance-media-id');
+  zoneWrapper.removeAttribute('data-auto-advance-interval');
+
+  if (scene.autoAdvance) {
+    if (scene.autoAdvanceInterval) {
+      zoneWrapper.setAttribute('data-auto-advance-interval', scene.autoAdvanceInterval);
+    }
+    else if (scene.autoAdvanceMediaId) {
+      zoneWrapper.setAttribute('data-auto-advance-media-id', scene.autoAdvanceMediaId);
+    }
+  }
+
   var imgHtml = '<img src="">';
-  var videoHtml = '<video loop="loop" muted="muted" src="" class="paused"></video>';
+  var videoHtml = '<video muted="muted" src="" class="paused"></video>';
   var divHtml = '<div class="zone-content-html"></div>';
 
   for (var i = 0; i < layout.length; i++) {
@@ -133,6 +155,11 @@ VizPrez.prototype.loadContent = function(zoneWrapper, scene) {
       case 'video':
         el = htmlToElement(videoHtml);
         el.src = zoneConf.filepath;
+        
+        if (zoneConf.loop !== false) {
+          el.setAttribute('loop','loop');
+        }
+
         break;
       case 'image':
         el = htmlToElement(imgHtml);
@@ -147,6 +174,10 @@ VizPrez.prototype.loadContent = function(zoneWrapper, scene) {
           el.innerHTML = zoneConf.content;
         }
         break;
+      }
+
+      if (zoneConf.id) {
+        el.setAttribute('id', zoneConf.id);
       }
 
       if (el) {
@@ -211,6 +242,22 @@ VizPrez.prototype.loadImage = function(wrapper, src) {
 }
 
 
+VizPrez.prototype.start = function() {
+  var _this = this;
+  // this.loadNext();
+  this.restartChildVideoPlayers(this.zoneWrapperTop);
+  this.transitioning = true;
+
+  fadeIn(this.zoneWrapperTop, this.transitionInterval, function() {
+    let top = _this.zoneWrapperTop;
+    top.classList.remove('to-fade-in');
+    _this.transitioning = false;
+    _this.checkElementAutoAdvance(top);
+  });
+  this.started = true;
+}
+
+
 VizPrez.prototype.advance = function() {
   console.log('advance');
   this.transitioning = true;
@@ -228,8 +275,42 @@ VizPrez.prototype.advance = function() {
     _this.zoneWrapperNext = newNext;
     _this.loadNext();
     _this.transitioning = false;
+    _this.checkElementAutoAdvance(newTop);
   });
 }
+
+
+VizPrez.prototype.intervalAdvance = function(interval) {
+  var _this = this;
+  setTimeout(function() {
+    _this.advance();
+  }, interval);
+}
+
+
+VizPrez.prototype.mediaAdvance = function(mediaObject) {
+  var _this = this;
+  mediaObject.addEventListener('ended', function() {
+    _this.advance();
+  });
+}
+
+
+VizPrez.prototype.checkElementAutoAdvance = function(element) {
+  if (element.hasAttribute('data-auto-advance-interval')) {
+    let interval = parseInt(element.getAttribute('data-auto-advance-interval'));
+    this.intervalAdvance(interval);
+  }
+  else if (element.hasAttribute('data-auto-advance-media-id')) {
+    let wrapper = element.closest('.zone-wrapper');
+    let selector = '#' + element.getAttribute('data-auto-advance-media-id');
+    let mediaObject = wrapper.querySelector(selector);
+    if (mediaObject) {
+      this.mediaAdvance(mediaObject);
+    }
+  }
+}
+
 
 
 VizPrez.prototype.reverse = function() {
@@ -251,20 +332,6 @@ VizPrez.prototype.playPause = function(element) {
     console.log(player);
     playPause(player);
   });
-}
-
-
-VizPrez.prototype.start = function() {
-  var _this = this;
-  // this.loadNext();
-  this.restartChildVideoPlayers(this.zoneWrapperTop);
-  this.transitioning = true;
-
-  fadeIn(this.zoneWrapperTop, this.transitionInterval, function() {
-    _this.zoneWrapperTop.classList.remove('to-fade-in');
-    _this.transitioning = false;
-  });
-  this.started = true;
 }
 
 
