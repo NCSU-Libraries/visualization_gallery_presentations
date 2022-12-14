@@ -15,6 +15,7 @@
 !/media/video/.keep
 /media/images/**
 !/media/images/.keep
+!/media/images/curtains.png
 !/media/images/readme
 !/media/images/readme/**
 
@@ -28,3 +29,9 @@
 # ignore zips
 **/*.zip
 *.zip
+
+# ignore other index files
+/index_*.html
+
+# ignore custom zip scripts
+/zip_*.sh

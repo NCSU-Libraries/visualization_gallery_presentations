@@ -1,3 +1,4 @@
+// ** VizPrezConfig **
 // VizPrezConfig handles configuration for VizPrez
 
 function VizPrezConfig() {
@@ -14,6 +15,7 @@ VizPrezConfig.prototype.addScene = function(sceneConfig) {
 }
 
 
+// ** VizPrez **
 // VizPrez is the presentation proper
 
 function VizPrez(selector, config) {
@@ -29,61 +31,306 @@ function VizPrez(selector, config) {
     console.log("config must include at least one scene in config['scenes']!");
   }
   else {
-    // // Enable for auto run mode
-    // this.interval = options['interval'] || 400;
-    
-    // // Enable for audio!
-    // this.audio;
-  
     this.config = config;
-    this.scenes = config.scenes;
-
-    if (config.transitionInterval === 0) {
-      this.transitionInterval = 0;
-    }
-    else {
-      this.transitionInterval = config.transitionInterval || 1000;
-    }
-    console.log(this.transitionInterval);
-
     this.initialize();
-    this.enableKeyboardConrol();
   }
 
   return this;
 }
 
+
+// configuration and initialization
+
 VizPrez.prototype.initialize = function() {
-  this.started = false;
-  this.sceneIndex = 0;
+  this.setDefaults();
+  this.setRootStyles();
+
+  if (this.storyMode) {
+    this.initializeStoryMode();
+  }
+
+  this.initializeZoneWrappers();
+  this.initializeScenes();
+  this.enableKeyboardConrol();
+}
+
+
+VizPrez.prototype.setRootStyles = function() {
+  // if (this.config.backgroundColor) {
+  //   this.root.style.background = this.config.backgroundColor;
+  // }
+
+  if (this.config.fontColor) {
+    this.root.style.color = this.config.fontColor;
+  }
+}
+
+
+VizPrez.prototype.initializeZoneWrappers = function() {
   this.zoneWrappers = this.root.querySelectorAll('.zone-wrapper');
-  this.zoneWrapperTopIndex = 0;
-  this.zoneWrapperNextIndex = 1;
   this.zoneWrapperTop = this.zoneWrappers[this.zoneWrapperTopIndex];
   this.zoneWrapperNext = this.zoneWrappers[this.zoneWrapperNextIndex];
   this.zoneWrapperTop.style.zIndex = 1;
   this.zoneWrapperNext.style.zIndex = 0;
-  this.grids = [12,10,8];
+}
+
+
+VizPrez.prototype.setDefaults = function() {
+  this.storyMode = this.config.storyMode || false;
+  this.started = false;
   this.transitioning = false;
-  var _this = this;
-  var scene1 = this.scenes[this.sceneIndex];
+  this.sceneIndex = 0;
+  this.zoneWrapperTopIndex = 0;
+  this.zoneWrapperNextIndex = 1;
+  this.grids = [12,10,8];
+  this.defaultGrid = this.config.defaultGrid || null; // null default will use 12-zone grid
+  this.loopMedia = (this.config.loopMedia !== false) ? true : false
+  this.queuedSlideshows = [];
+  if (this.config.transitionInterval === 0) {
+    this.transitionInterval = 0;
+  }
+  else {
+    this.transitionInterval = this.config.transitionInterval || 1000;
+  }
+}
+
+
+VizPrez.prototype.initializeScenes = function() {
+  this.scenes = this.config.scenes;
+  this.processStoryModeScenes();
+  console.log(this.scenes);
+
+  let scene1 = this.scenes[this.sceneIndex];
   this.initializeLayout(this.zoneWrapperTop, scene1);
   this.loadContent(this.zoneWrapperTop, scene1);
   this.incrementSceneIndex();
-  var scene2 = this.scenes[this.sceneIndex];
+
+  let scene2 = this.scenes[this.sceneIndex];
   this.initializeLayout(this.zoneWrapperNext, scene2);
   this.loadContent(this.zoneWrapperNext, scene2);
+  this.nextScene = scene2;
   this.incrementSceneIndex();
 }
 
 
+VizPrez.prototype.processStoryModeScenes = function() {
+  this.scenes.forEach(function(scene) {
+    if (!scene.startTime) {
+      scene.startTime = 0;
+    }
+  });
+
+  function sceneSort(a, b) {
+    return a.startTime - b.startTime;
+  }
+
+  this.scenes = this.scenes.sort(sceneSort);
+
+  for (let i = 0; i < this.scenes.length; i++) {
+    let thisScene = this.scenes[i];
+    let nextScene = this.scenes[i + 1];
+    thisScene.autoAdvanceMediaTime = nextScene ? nextScene.startTime : null;
+    thisScene.autoAdvanceMediaId = this.masterAudio.id;
+  }
+
+  this.scenes.forEach(function(scene) {
+    if (!scene.startTime) {
+      scene.startTime = 0;
+    }
+  });
+
+  // this.scenes = newScenes;
+}
+
+
+// Presentation control
+
+VizPrez.prototype.incrementSceneIndex = function() {
+  // this.sceneIndex = increment(this.sceneIndex, this.scenes.length - 1);
+  this.sceneIndex = (this.sceneIndex + 1) % this.scenes.length;
+}
+
+
+VizPrez.prototype.loadNext = function() {
+  var scene = this.scenes[this.sceneIndex];
+  this.initializeLayout(this.zoneWrapperNext, scene);
+  this.loadContent(this.zoneWrapperNext, scene);
+  this.nextScene = scene;
+  this.incrementSceneIndex();
+}
+
+
+VizPrez.prototype.loadPrev = function() {
+  // At this point the next scene has already been loaded, and this.sceneIndex has been incremented to the one after
+  // That means that this.sceneIndex is 2 past the current scene's index
+  // So to load the previous one, you need to set that number back by 3
+  var indexMinus2 = modulo((this.sceneIndex - 3), this.scenes.length);
+  this.sceneIndex = (indexMinus2 >= 0) ? indexMinus2 : ((this.scenes.length - 1) + indexMinus2);
+  
+  console.log("loadPrev " + this.sceneIndex);
+
+  var scene = this.scenes[this.sceneIndex];
+  this.initializeLayout(this.zoneWrapperNext, scene);
+  this.loadContent(this.zoneWrapperNext, scene);
+  this.nextScene = scene;
+  this.incrementSceneIndex();
+}
+
+
+VizPrez.prototype.start = function() {
+  var _this = this;
+  // this.loadNext();
+  this.restartChildVideoPlayers(this.zoneWrapperTop);
+  this.transitioning = true;
+
+  fadeIn(this.zoneWrapperTop, this.transitionInterval, function() {
+    let top = _this.zoneWrapperTop;
+    top.classList.remove('to-fade-in');
+    _this.transitioning = false;
+    _this.checkElementAutoAdvance(top);
+  });
+
+  this.startQueuedSlideshows();
+  
+  if (this.masterAudio) {
+    console.log(this.masterAudio);
+    this.playPause(this.masterAudio);
+  }
+
+  this.started = true;
+}
+
+
+// NOTE: this.sceneIndex at this point is the index of the scene to be loaded in the background, not the one about to be displayed.
+// the current scene use modulo(this.sceneIndex -1, this.scenes.length)
+VizPrez.prototype.advance = function(options) {
+  options ||= {};
+  var skip = options.skip || false;
+  var back = options.back || false;
+
+  console.log('advance');
+  console.log(this.sceneIndex);
+
+  this.transitioning = true;
+  var _this = this;
+
+  let transitionInterval = this.transitionInterval;
+
+  if (this.nextScene.transitionInterval === 0) {
+   transitionInterval = 0;
+  }
+  else if (this.nextScene.transitionInterval) {
+   transitionInterval = this.nextScene.transitionInterval;
+  }
+
+  // this.loadContent(this.zoneWrapperNext);
+  this.zoneWrapperNext.style.opacity = 0;
+  this.zoneWrapperNext.style.zIndex = 1000;
+  this.zoneWrapperTop.style.zIndex = 0;
+  this.restartChildVideoPlayers(this.zoneWrapperNext);
+
+  if (skip) {
+    console.log('skip');
+    console.log(this.nextScene.startTime);
+    
+    if (this.mediaTimeAdvanceInterval) {
+      clearInterval(this.mediaTimeAdvanceInterval);
+    }
+
+    if (this.masterAudio && this.nextScene.startTime) {
+      this.masterAudio.currentTime = this.nextScene.startTime;
+    }
+    // For storyMode only, advance master audio to start time specified in this.nextScne
+  }
+
+  let currentSceneIndex = modulo(this.sceneIndex - 1, this.scenes.length);
+
+  if (this.storyMode && currentSceneIndex == 0) {
+    pause(this.masterAudio);
+    this.masterAudio.currentTime = 0;
+    play(this.masterAudio);
+  }
+
+  fadeIn(this.zoneWrapperNext, transitionInterval, function() {
+    var newNext = _this.zoneWrapperTop;
+    var newTop = _this.zoneWrapperNext;
+    _this.zoneWrapperTop = newTop;
+    _this.zoneWrapperNext = newNext;
+    _this.loadNext();
+    _this.transitioning = false;
+    _this.checkElementAutoAdvance(newTop);
+  });
+  this.startQueuedSlideshows();
+}
+
+
+VizPrez.prototype.reverse = function() {
+  console.log('reverse');
+  this.loadPrev();
+  this.advance({skip: true});
+}
+
+
+VizPrez.prototype.enableKeyboardConrol = function() {
+  var _this = this;
+  document.addEventListener('keydown', function(event) {
+    var keyCode = event.keyCode;
+    // s for start
+    if (!_this.started) {
+      _this.start();
+    }
+    else if (_this.started) {
+      switch(keyCode) {
+        // spacebar
+        case 32:
+          _this.playPause();
+          break;
+        // n
+        case 78:
+          if (!_this.transitioning) {
+            _this.advance({skip: true});
+          }
+        // b
+        case 66:
+          if (!_this.transitioning) {
+            _this.reverse();
+          }
+          break;
+        // p
+        case 80:
+          break;
+        // arrow right
+        case 39:
+          break;
+        // arrow left
+        case 37:
+          break;
+      }
+    }
+    
+  });
+}
+
+
+// Scene controls
+
 VizPrez.prototype.initializeLayout = function(zoneWrapper, scene) {
   var layout = scene.layout;
+
   layout = layout.sort(function(a,b) { return a.zone - b.zone });
+  
+  // TODO: Support modification scenes (replace content in specific zones rather than replacing the entire scene)
   removeAllChildNodes(zoneWrapper);
+
+  if (!scene.grid) {
+    scene.grid = this.defaultGrid;
+  }
 
   if (scene.backgroundColor) {
     zoneWrapper.style.backgroundColor = scene.backgroundColor;
+  }
+  else if (this.config.backgroundColor) {
+    zoneWrapper.style.background = this.config.backgroundColor;
   }
   else {
     zoneWrapper.style.backgroundColor = null;
@@ -118,7 +365,6 @@ VizPrez.prototype.initializeLayout = function(zoneWrapper, scene) {
   }
 }
 
-
 VizPrez.prototype.loadContent = function(zoneWrapper, scene) {
   console.log(scene);
 
@@ -126,50 +372,59 @@ VizPrez.prototype.loadContent = function(zoneWrapper, scene) {
   layout = layout.sort(function(a,b) { return a.zone - b.zone });
   
   zoneWrapper.removeAttribute('data-auto-advance-media-id');
-  zoneWrapper.removeAttribute('data-auto-advance-interval');
+  zoneWrapper.removeAttribute('data-auto-advance-time');
+  zoneWrapper.removeAttribute('data-auto-advance-media-time');
 
-  if (scene.autoAdvance) {
-    if (scene.autoAdvanceInterval) {
-      zoneWrapper.setAttribute('data-auto-advance-interval', scene.autoAdvanceInterval);
-    }
-    else if (scene.autoAdvanceMediaId) {
-      zoneWrapper.setAttribute('data-auto-advance-media-id', scene.autoAdvanceMediaId);
+  if (scene.autoAdvanceTime) {
+    zoneWrapper.setAttribute('data-auto-advance-time', scene.autoAdvanceTime);
+  }
+  else if (scene.autoAdvanceMediaId) {
+    zoneWrapper.setAttribute('data-auto-advance-media-id', scene.autoAdvanceMediaId);
+    if (scene.autoAdvanceMediaTime) {
+      zoneWrapper.setAttribute('data-auto-advance-media-time', scene.autoAdvanceMediaTime);
     }
   }
 
   var imgHtml = '<img src="">';
-  var videoHtml = '<video muted="muted" src="" class="paused"></video>';
+  var videoHtml = '<video src="" class="paused"></video>';
   var divHtml = '<div class="zone-content-html"></div>';
 
   for (var i = 0; i < layout.length; i++) {
-    var zoneConf = layout[i]
+    var zoneConf = layout[i];
+    
+    zoneConf.loop ||= this.loopMedia;
+
     var zoneId = "zone-" + zoneConf.zone;
     var zoneSelector = '.zone.' + zoneId;
-    // console.log(zoneSelector);
     var zone = zoneWrapper.querySelector(zoneSelector);
 
     if (zone) {
       var wrapper = zone.querySelector('.wrapper');
       var el;
+
       switch (zoneConf.contentType) {
       case 'video':
         el = htmlToElement(videoHtml);
-        el.src = zoneConf.filepath;
+        el.src = zoneConf.filePath;
         
         if (zoneConf.loop !== false) {
           el.setAttribute('loop','loop');
         }
 
+        if (zoneConf.muted !== false) {
+          // el.setAttribute('muted',1);
+          el.muted = "muted";
+        }
         break;
       case 'image':
         el = htmlToElement(imgHtml);
-        el.src = zoneConf.filepath;
+        el.src = zoneConf.filePath;
+        break;
+      case 'slideshow':
+        el = htmlToElement('<div class="slideshow" id="slideshow"></div>');
         break;
       case 'html':
         el = htmlToElement(divHtml);
-
-        console.log(zoneConf);
-        zoneConf
         if (zoneConf.content) {
           el.innerHTML = zoneConf.content;
         }
@@ -181,7 +436,25 @@ VizPrez.prototype.loadContent = function(zoneWrapper, scene) {
       }
 
       if (el) {
-        wrapper.appendChild(el);
+        if (zoneConf.caption) {
+          let contentEl = generateElement('div','content');
+          contentEl.appendChild(el);
+          let caption = generateElement('div','caption');
+          caption.innerHTML = zoneConf.caption;
+          wrapper.classList.add('with-caption');
+          wrapper.appendChild(contentEl);
+          wrapper.appendChild(caption);
+        }
+        else {
+          wrapper.appendChild(el);
+        }
+      }
+
+      if (zoneConf.contentType == 'slideshow') {
+        let list = zoneConf.fileList;
+        let interval = zoneConf.interval ? (parseFloat(zoneConf.interval) * 1000) : null;
+        let slideshow = new Slideshow({ element: el, playlist: list, displayInterval: interval, autoStart: false });
+        this.queuedSlideshows.push(slideshow)
       }
 
       if (zoneConf.backgroundColor) {
@@ -194,89 +467,63 @@ VizPrez.prototype.loadContent = function(zoneWrapper, scene) {
     }
   }
 
-  console.log(scene.callback);
-
-
+  // console.log(scene.callback);
 }
 
 
-VizPrez.prototype.incrementSceneIndex = function() {
-  // this.sceneIndex = increment(this.sceneIndex, this.scenes.length - 1);
-  this.sceneIndex = (this.sceneIndex + 1) % this.scenes.length;
+// Scene auto-advance controls 
+
+VizPrez.prototype.checkElementAutoAdvance = function(element) {
+
+  console.log(element);
+
+  if (element.hasAttribute('data-auto-advance-time')) {
+    let time = parseFloat(element.getAttribute('data-auto-advance-time'));
+
+    if (time && !Number.isNaN(time)) {
+      this.intervalAdvance(time * 1000);
+    }
+    
+  }
+  else if (element.hasAttribute('data-auto-advance-media-id')) {
+    let mediaObject;
+
+    if (this.storyMode) {
+      mediaObject = this.masterAudio;
+    }
+    else {
+      let selector = '#' + element.getAttribute('data-auto-advance-media-id');
+      mediaObject = document.querySelector(selector);
+    }
+
+    if (mediaObject) {
+      if (element.hasAttribute('data-auto-advance-media-time')) {
+        let time = parseFloat(element.getAttribute('data-auto-advance-media-time'));
+        this.mediaTimeAdvance(mediaObject,time * 1000);
+      }
+      else {
+        this.mediaAdvance(mediaObject);
+      }
+    }
+  }
 }
 
 
-VizPrez.prototype.loadNext = function() {
-  var scene = this.scenes[this.sceneIndex];
-  this.initializeLayout(this.zoneWrapperNext, scene);
-  this.loadContent(this.zoneWrapperNext, scene);
-  this.incrementSceneIndex();
-}
+VizPrez.prototype.mediaTimeAdvance = function(mediaObject, time) {
+  console.log('mediaTimeAdvance');
+  console.log(mediaObject);
 
-
-VizPrez.prototype.loadPrev = function() {
-  // At this point the next scene has already been loaded, and this.sceneIndex has been incremented to the one after
-  // That means that this.sceneIndex is 2 past the current scene's index
-  // So to load the previous one, you need to set that number back by 3
-  var indexMinus2 = this.sceneIndex - 3;
-  this.sceneIndex = (indexMinus2 >= 0) ? indexMinus2 : ((this.scenes.length - 1) + indexMinus2);
-  console.log("loadPrev " + this.sceneIndex);
-  var scene = this.scenes[this.sceneIndex];
-  this.initializeLayout(this.zoneWrapperNext, scene);
-  this.loadContent(this.zoneWrapperNext, scene);
-  this.incrementSceneIndex();
-}
-
-
-VizPrez.prototype.loadVideo = function(wrapper, src) {
-  var player = wrapper.querySelector('video');
-  player.src = src;
-}
-
-
-VizPrez.prototype.loadImage = function(wrapper, src) {
-  console.log(wrapper);
-
-  var img = wrapper.querySelector('img');
-  img.src = src;
-}
-
-
-VizPrez.prototype.start = function() {
   var _this = this;
-  // this.loadNext();
-  this.restartChildVideoPlayers(this.zoneWrapperTop);
-  this.transitioning = true;
 
-  fadeIn(this.zoneWrapperTop, this.transitionInterval, function() {
-    let top = _this.zoneWrapperTop;
-    top.classList.remove('to-fade-in');
-    _this.transitioning = false;
-    _this.checkElementAutoAdvance(top);
-  });
-  this.started = true;
-}
+  time = time / 1000;
+  console.log(time);
 
-
-VizPrez.prototype.advance = function() {
-  console.log('advance');
-  this.transitioning = true;
-  var _this = this;
-  // this.loadContent(this.zoneWrapperNext);
-  this.zoneWrapperNext.style.opacity = 0;
-  this.zoneWrapperNext.style.zIndex = 1000;
-  this.zoneWrapperTop.style.zIndex = 0;
-  this.restartChildVideoPlayers(this.zoneWrapperNext);
-
-  fadeIn(this.zoneWrapperNext, this.transitionInterval, function() {
-    var newNext = _this.zoneWrapperTop;
-    var newTop = _this.zoneWrapperNext;
-    _this.zoneWrapperTop = newTop;
-    _this.zoneWrapperNext = newNext;
-    _this.loadNext();
-    _this.transitioning = false;
-    _this.checkElementAutoAdvance(newTop);
-  });
+  this.mediaTimeAdvanceInterval = setInterval(function() {
+    if (mediaObject.currentTime >= time) {
+      clearInterval(_this.mediaTimeAdvanceInterval);
+      _this.advance();
+    }
+  }, 10);
 }
 
 
@@ -291,47 +538,27 @@ VizPrez.prototype.intervalAdvance = function(interval) {
 VizPrez.prototype.mediaAdvance = function(mediaObject) {
   var _this = this;
   mediaObject.addEventListener('ended', function() {
+    if (_this.storyMode) {
+      this.classList.add('paused');
+    }
     _this.advance();
   });
 }
 
 
-VizPrez.prototype.checkElementAutoAdvance = function(element) {
-  if (element.hasAttribute('data-auto-advance-interval')) {
-    let interval = parseInt(element.getAttribute('data-auto-advance-interval'));
-    this.intervalAdvance(interval);
-  }
-  else if (element.hasAttribute('data-auto-advance-media-id')) {
-    let wrapper = element.closest('.zone-wrapper');
-    let selector = '#' + element.getAttribute('data-auto-advance-media-id');
-    let mediaObject = wrapper.querySelector(selector);
-    if (mediaObject) {
-      this.mediaAdvance(mediaObject);
-    }
-  }
+// Content controls
+
+VizPrez.prototype.loadVideo = function(wrapper, src) {
+  var player = wrapper.querySelector('video');
+  player.src = src;
 }
 
 
+VizPrez.prototype.loadImage = function(wrapper, src) {
+  // console.log(wrapper);
 
-VizPrez.prototype.reverse = function() {
-  console.log('reverse');
-  this.loadPrev();
-  this.advance();
-}
-
-
-VizPrez.prototype.playPause = function(element) {
-  var players;
-  if (element) {
-    players = element.querySelectorAll('video,audio');
-  }
-  else {
-    players = document.querySelectorAll('video,audio');
-  }
-  players.forEach(function(player) {
-    console.log(player);
-    playPause(player);
-  });
+  var img = wrapper.querySelector('img');
+  img.src = src;
 }
 
 
@@ -343,42 +570,57 @@ VizPrez.prototype.restartChildVideoPlayers = function(element) {
 }
 
 
-VizPrez.prototype.enableKeyboardConrol = function() {
-  var _this = this;
-  document.addEventListener('keydown', function(event) {
-    var keyCode = event.keyCode;
-    // s for start
-    if (!_this.started) {
-      _this.start();
+VizPrez.prototype.startQueuedSlideshows = function() {
+  if (this.queuedSlideshows.length > 0) {
+    this.queuedSlideshows.forEach(function(slideshow) {
+      slideshow.cycleImages();
+    });
+    this.queuedSlideshows = [];
+  }
+}
+
+
+VizPrez.prototype.playPause = function(element) {
+  var players;
+
+  if (element) {
+
+    let name = element.tagName.toLowerCase();
+    if (name == 'audio' || element.tagName == 'video') {
+      // console.log(element);
+      players = [element];
     }
-    else if (_this.started) {
-      switch(keyCode) {
-        // spacebar
-        case 32:
-          _this.playPause();
-          break;
-        // n
-        case 78:
-          if (!_this.transitioning) {
-            _this.advance();
-          }
-        // b
-        case 66:
-          if (!_this.transitioning) {
-            _this.reverse();
-          }
-          break;
-        // p
-        case 80:
-          break;
-        // arrow right
-        case 39:
-          break;
-        // arrow left
-        case 37:
-          break;
-      }
+    else {
+      players = element.querySelectorAll('video,audio');
     }
-    
+  }
+  else {
+    players = this.zoneWrapperTop.querySelectorAll('video,audio');
+    players = Array.prototype.slice.call(players);
+    if (this.masterAudio) {
+      players.push(this.masterAudio);
+    }
+  }
+
+  // console.log(players);
+
+  players.forEach(function(player) {
+    console.log(player);
+    playPause(player);
   });
+}
+
+
+// Story controls (storyMode == true)
+
+VizPrez.prototype.initializeStoryMode = function() {
+  this.masterAudio = null;
+
+  if (this.config.masterAudioFilePath) {
+    this.masterAudioWrapper = document.querySelector("#master-audio");
+    let audioElementHtml = '<audio src="' + this.config.masterAudioFilePath + '" class="paused">';
+    this.masterAudio = htmlToElement(audioElementHtml);
+    this.masterAudio.id = this.config.masterAudioId || 'master-audio-element';
+    this.masterAudioWrapper.appendChild(this.masterAudio);
+  }
 }

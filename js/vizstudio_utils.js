@@ -70,7 +70,7 @@ function generateElement(name, classes) {
 
 function playPause(element) {
   if (element) {
-    if (element.classList.contains('paused')) {
+    if (element.ended || element.paused || element.classList.contains('paused')) {
       element.play();
       element.classList.remove('paused');
     }

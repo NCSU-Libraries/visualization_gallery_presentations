@@ -156,7 +156,7 @@ The `layouts` array contains one or more zone definitions, which are Javascript 
   zone: <integer indicating the primary zone number (1-12)>,
   span: <number of zones to combine, begining with this one and moving right> (OPTIONAL, 1-12),
   contentType: <'image', 'video', or 'html' >,
-  filepath: <path from root to the content file (for image or video)> (REQUIRED FOR 'video' or 'image' contentType),
+  filePath: <path from root to the content file (for image or video)> (REQUIRED FOR 'video' or 'image' contentType),
   content: <raw HTML text for 'html' contentType> (REQUIRED FOR 'html' contentType)
 }
 ```
@@ -168,14 +168,14 @@ Here is an example of a scene using the default 12-zone grid, with alternating s
 ```
 conf.addScene({
  layout: [
-   { zone: 1, contentType: 'video', filepath: 'media/video/vid1.mp4' },
-   { zone: 2, span: 2, contentType: 'image', filepath: 'media/images/img1.png' },
-   { zone: 4, contentType: 'video', filepath: 'media/video/vid2.mp4' },
-   { zone: 5, span: 2, contentType: 'image', filepath: 'media/images/img2.png' },
-   { zone: 7, contentType: 'video', filepath: 'media/video/vid3.mp4' },
-   { zone: 8, span: 2, contentType: 'image', filepath: 'media/images/img3.png' },
-   { zone: 10, contentType: 'video', filepath: 'media/video/vid4.mp4' },
-   { zone: 11, span: 2, contentType: 'image', filepath: 'media/images/img4.png' },
+   { zone: 1, contentType: 'video', filePath: 'media/video/vid1.mp4' },
+   { zone: 2, span: 2, contentType: 'image', filePath: 'media/images/img1.png' },
+   { zone: 4, contentType: 'video', filePath: 'media/video/vid2.mp4' },
+   { zone: 5, span: 2, contentType: 'image', filePath: 'media/images/img2.png' },
+   { zone: 7, contentType: 'video', filePath: 'media/video/vid3.mp4' },
+   { zone: 8, span: 2, contentType: 'image', filePath: 'media/images/img3.png' },
+   { zone: 10, contentType: 'video', filePath: 'media/video/vid4.mp4' },
+   { zone: 11, span: 2, contentType: 'image', filePath: 'media/images/img4.png' },
  ]
 })
 ```
@@ -211,7 +211,7 @@ A variety of dynamic content can be included in a presentation by using custom J
   * `vizstudio.css` - Base styles from [Visualization Studio HTML Framework](https://github.ncsu.edu/ncsu-libraries/vizstudio_html_framework)
   * `vizstudio_grid10` - Additional styles required for 10-zone layouts
   * `vizstudio_grid8` - Additional styles required for 8-zone layouts
-  * `vizstudio_prez.css` - Styles for this presentation framework. To override any of these, link a separate CSS file after this one that overrides these declarations. Avoid editing this file.
+  * `vizprez.css` - Styles for this presentation framework. To override any of these, link a separate CSS file after this one that overrides these declarations. Avoid editing this file.
 * `js/` - All Javascript files go in here
   * `config.js` - Presentation configuration - this is the main file you'll deal with
   * `config_example.js` - A sample conifugration file demonstrating various scene layouts and content combinations.

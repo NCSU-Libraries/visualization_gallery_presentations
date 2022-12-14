@@ -11,10 +11,11 @@
   overflow: hidden;
   display: block;
   position: relative;
+  color:  white;
 }
 
 #vizprez {
-  background:  url('../media/images/default.png');
+  background:  url('../media/images/default.png') repeat-x;
 }
 
 .zone-wrapper {
@@ -92,6 +93,27 @@
   opacity: 0.4;
   font-family: monospace;
 }
+
+
+.zone > .wrapper .caption {
+  position:  absolute;
+  bottom:  0;
+  left:  0;
+  font-size:  24px;
+  line-height: 1.1em;
+  z-index:  100;
+  width:  100%;
+  padding: 10px 0 20px 0;
+  text-align:  center;
+}
+
+
+.zone > .wrapper.with-caption .content {
+  position: relative;
+  width: 100%;
+  height: 950px;
+}
+
 
 .controls {
   clear: both;
