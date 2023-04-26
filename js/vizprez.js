@@ -44,14 +44,28 @@ function VizPrez(selector, config) {
 VizPrez.prototype.initialize = function() {
   this.setDefaults();
   this.setRootStyles();
-
-  if (this.storyMode) {
-    this.initializeStoryMode();
-  }
-
   this.initializeZoneWrappers();
   this.initializeScenes();
   this.enableKeyboardConrol();
+}
+
+
+VizPrez.prototype.setDefaults = function() {
+  this.started = false;
+  this.transitioning = false;
+  this.sceneIndex = 0;
+  this.zoneWrapperTopIndex = 0;
+  this.zoneWrapperNextIndex = 1;
+  this.grids = [12,10,8];
+  this.defaultGrid = this.config.defaultGrid || null; // null default will use 12-zone grid
+  this.loopMedia = (this.config.loopMedia !== false) ? true : false
+  this.queuedSlideshows = [];
+  if (this.config.transitionInterval === 0) {
+    this.transitionInterval = 0;
+  }
+  else {
+    this.transitionInterval = this.config.transitionInterval || 1000;
+  }
 }
 
 
@@ -75,29 +89,8 @@ VizPrez.prototype.initializeZoneWrappers = function() {
 }
 
 
-VizPrez.prototype.setDefaults = function() {
-  this.storyMode = this.config.storyMode || false;
-  this.started = false;
-  this.transitioning = false;
-  this.sceneIndex = 0;
-  this.zoneWrapperTopIndex = 0;
-  this.zoneWrapperNextIndex = 1;
-  this.grids = [12,10,8];
-  this.defaultGrid = this.config.defaultGrid || null; // null default will use 12-zone grid
-  this.loopMedia = (this.config.loopMedia !== false) ? true : false
-  this.queuedSlideshows = [];
-  if (this.config.transitionInterval === 0) {
-    this.transitionInterval = 0;
-  }
-  else {
-    this.transitionInterval = this.config.transitionInterval || 1000;
-  }
-}
-
-
 VizPrez.prototype.initializeScenes = function() {
   this.scenes = this.config.scenes;
-  this.processStoryModeScenes();
   console.log(this.scenes);
 
   let scene1 = this.scenes[this.sceneIndex];
@@ -110,36 +103,6 @@ VizPrez.prototype.initializeScenes = function() {
   this.loadContent(this.zoneWrapperNext, scene2);
   this.nextScene = scene2;
   this.incrementSceneIndex();
-}
-
-
-VizPrez.prototype.processStoryModeScenes = function() {
-  this.scenes.forEach(function(scene) {
-    if (!scene.startTime) {
-      scene.startTime = 0;
-    }
-  });
-
-  function sceneSort(a, b) {
-    return a.startTime - b.startTime;
-  }
-
-  this.scenes = this.scenes.sort(sceneSort);
-
-  for (let i = 0; i < this.scenes.length; i++) {
-    let thisScene = this.scenes[i];
-    let nextScene = this.scenes[i + 1];
-    thisScene.autoAdvanceMediaTime = nextScene ? nextScene.startTime : null;
-    thisScene.autoAdvanceMediaId = this.masterAudio.id;
-  }
-
-  this.scenes.forEach(function(scene) {
-    if (!scene.startTime) {
-      scene.startTime = 0;
-    }
-  });
-
-  // this.scenes = newScenes;
 }
 
 
@@ -223,10 +186,11 @@ VizPrez.prototype.advance = function(options) {
    transitionInterval = this.nextScene.transitionInterval;
   }
 
-  // this.loadContent(this.zoneWrapperNext);
+  // // this.loadContent(this.zoneWrapperNext);
   this.zoneWrapperNext.style.opacity = 0;
   this.zoneWrapperNext.style.zIndex = 1000;
   this.zoneWrapperTop.style.zIndex = 0;
+  
   this.restartChildVideoPlayers(this.zoneWrapperNext);
 
   if (skip) {
@@ -236,26 +200,22 @@ VizPrez.prototype.advance = function(options) {
     if (this.mediaTimeAdvanceInterval) {
       clearInterval(this.mediaTimeAdvanceInterval);
     }
-
-    if (this.masterAudio && this.nextScene.startTime) {
-      this.masterAudio.currentTime = this.nextScene.startTime;
-    }
-    // For storyMode only, advance master audio to start time specified in this.nextScne
   }
 
   let currentSceneIndex = modulo(this.sceneIndex - 1, this.scenes.length);
-
-  if (this.storyMode && currentSceneIndex == 0) {
-    pause(this.masterAudio);
-    this.masterAudio.currentTime = 0;
-    play(this.masterAudio);
-  }
 
   fadeIn(this.zoneWrapperNext, transitionInterval, function() {
     var newNext = _this.zoneWrapperTop;
     var newTop = _this.zoneWrapperNext;
     _this.zoneWrapperTop = newTop;
     _this.zoneWrapperNext = newNext;
+
+    //
+    _this.zoneWrapperNext.style.opacity = 0;
+    _this.zoneWrapperNext.style.zIndex = 1000;
+    _this.zoneWrapperTop.style.zIndex = 0;
+    //
+
     _this.loadNext();
     _this.transitioning = false;
     _this.checkElementAutoAdvance(newTop);
@@ -326,7 +286,10 @@ VizPrez.prototype.initializeLayout = function(zoneWrapper, scene) {
     scene.grid = this.defaultGrid;
   }
 
-  if (scene.backgroundColor) {
+  if (scene.modify) {
+
+  }
+  else if (scene.backgroundColor) {
     zoneWrapper.style.backgroundColor = scene.backgroundColor;
   }
   else if (this.config.backgroundColor) {
@@ -335,6 +298,7 @@ VizPrez.prototype.initializeLayout = function(zoneWrapper, scene) {
   else {
     zoneWrapper.style.backgroundColor = null;
   }
+
 
   if (scene.backgroundImage) {
     zoneWrapper.style.backgroundImage = "url('" + scene.backgroundImage + "')";
@@ -486,15 +450,8 @@ VizPrez.prototype.checkElementAutoAdvance = function(element) {
     
   }
   else if (element.hasAttribute('data-auto-advance-media-id')) {
-    let mediaObject;
-
-    if (this.storyMode) {
-      mediaObject = this.masterAudio;
-    }
-    else {
-      let selector = '#' + element.getAttribute('data-auto-advance-media-id');
-      mediaObject = document.querySelector(selector);
-    }
+    let selector = '#' + element.getAttribute('data-auto-advance-media-id');
+    let mediaObject = document.querySelector(selector);
 
     if (mediaObject) {
       if (element.hasAttribute('data-auto-advance-media-time')) {
@@ -538,9 +495,6 @@ VizPrez.prototype.intervalAdvance = function(interval) {
 VizPrez.prototype.mediaAdvance = function(mediaObject) {
   var _this = this;
   mediaObject.addEventListener('ended', function() {
-    if (_this.storyMode) {
-      this.classList.add('paused');
-    }
     _this.advance();
   });
 }
@@ -608,19 +562,4 @@ VizPrez.prototype.playPause = function(element) {
     console.log(player);
     playPause(player);
   });
-}
-
-
-// Story controls (storyMode == true)
-
-VizPrez.prototype.initializeStoryMode = function() {
-  this.masterAudio = null;
-
-  if (this.config.masterAudioFilePath) {
-    this.masterAudioWrapper = document.querySelector("#master-audio");
-    let audioElementHtml = '<audio src="' + this.config.masterAudioFilePath + '" class="paused">';
-    this.masterAudio = htmlToElement(audioElementHtml);
-    this.masterAudio.id = this.config.masterAudioId || 'master-audio-element';
-    this.masterAudioWrapper.appendChild(this.masterAudio);
-  }
 }

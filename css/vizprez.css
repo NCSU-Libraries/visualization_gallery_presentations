@@ -173,3 +173,21 @@
 #slideSource.fade {
   opacity: 0;
 }
+
+
+/* transitions */
+
+.to-fade-in {
+  opacity:  0;
+}
+
+.fade-in {
+  transition: opacity 2s ease-out; /* It slowly shows the element as we place the mouse on the box and when the time reaches 2 seconds, it is fully visible. */  
+  -webkit-transition: opacity 2s ease-out;  
+  -moz-transition: opacity 2s ease-in-out;
+  opacity:  1;
+}
+
+.fade-in-complete {
+  opacity: 1;
+}

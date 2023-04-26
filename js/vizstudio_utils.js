@@ -8,6 +8,9 @@ function fadeOut(element, duration, callback) {
   fade('out',element, duration, callback);
 }
 
+
+
+
 function fade(direction, element, duration, callback) {
   direction = (direction == 'in') ? 'in' : 'out';
   var opacityInterval = 0.05;
@@ -15,11 +18,11 @@ function fade(direction, element, duration, callback) {
   if (duration !== 0) {
     duration ||= 1000;
   }
-  else {
-    opacityInterval = 1;
-  }
+  // else {
+  //   opacityInterval = 1;
+  // }
 
-  var stepInterval = duration > 20 ? Math.ceil(duration / 20) : duration;
+  var stepInterval = duration > 30 ? Math.ceil(duration / 30) : duration;
   var op = (direction == 'in') ? 0 : 1;  // initial opacity
   element.style.display = 'block';
 
@@ -36,6 +39,28 @@ function fade(direction, element, duration, callback) {
 
   }, stepInterval);
 }
+
+
+
+
+// function fade(direction, element, duration, callback) {
+
+//   element.addEventListener('transitionend', (event) => {
+//     element.style.transition = null;
+//     executeCallback(callback, element);
+//   });
+
+//   direction = (direction == 'in') ? 'in' : 'out';
+
+//   if (duration !== 0) {
+//     duration ||= 1000;
+//   }
+
+//   let op = (direction == 'in') ? 1 : 0;  // end opacity
+//   let transitionValue = 'opacity ' + duration + 'ms ease-' + direction;
+//   element.style.transition = transitionValue;
+//   element.style.opacity = op;
+// }
 
 
 
