@@ -56,7 +56,7 @@ The default grid divides the room into 12 zones, which can be combined to create
 8- and 10-zone grids are also available.
 
 > The grid system is described in more detail in the 
-[Visualization Studio HTML Framework](https://github.com/NCSU-Libraries/vizstudio_html_framework).
+[Visualization Studio HTML Framework](https://github.com/NCSU-Libraries/visualization_gallery_html_framework).
 
 #### Zones
 
@@ -102,7 +102,7 @@ Many other layouts are possible using spans.
 
 ```
 function config() {
-  var conf = new VizPrezConfig();
+  var conf = new VisPresConfig();
   // *** No edits above here ***
 
 
@@ -209,16 +209,14 @@ A variety of dynamic content can be included in a presentation by using custom J
 ### Directory structure and overview of included files
 
 * `css/` - All CSS files are in here
-  * `vizstudio.css` - Base styles from [Visualization Studio HTML Framework](https://github.ncsu.edu/ncsu-libraries/vizstudio_html_framework)
-  * `vizstudio_grid10` - Additional styles required for 10-zone layouts
-  * `vizstudio_grid8` - Additional styles required for 8-zone layouts
-  * `vizprez.css` - Styles for this presentation framework. To override any of these, link a separate CSS file after this one that overrides these declarations. Avoid editing this file.
+  * `visualization_gallery.css` - Base styles from [Visualization Studio HTML Framework](https://github.ncsu.edu/ncsu-libraries/visualization_gallery_html_framework)
+  * `vispres.css` - Styles for this presentation framework. To override any of these, link a separate CSS file after this one that overrides these declarations. Avoid editing this file.
 * `js/` - All Javascript files go in here
   * `config.js` - Presentation configuration - this is the main file you'll deal with
   * `config_example.js` - A sample conifugration file demonstrating various scene layouts and content combinations.
   * `transform_scale.js` - A utility that scales the display down to fit a laptop or desktop monitor.
-  * `vizprez.js` - The main Javascript that makes everything work. Don't mess with this file unless you know what you're doing and maybe not even then.
-  * `vizstudio_utils.js` - A bunch of utility functions that are shared between Vizstudio projects. Leave it alone, or add new functions at the end.
+  * `vispres.js` - The main Javascript that makes everything work. Don't mess with this file unless you know what you're doing and maybe not even then.
+  * `vispres_utils.js` - A set of utility functions for general use.
 * `media/` - All media files for presentations should go here, preferably in appropriate subdirectories:
   * `audio/` (MP3, WAV)
   * `images/` (JPG, PNG)

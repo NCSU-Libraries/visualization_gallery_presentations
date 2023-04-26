@@ -1,9 +1,9 @@
-VizPrezConfig.prototype.spanwrapRequired = function(zoneConf) {
+VisPresConfig.prototype.spanwrapRequired = function(zoneConf) {
   return (zoneConf.zone + zoneConf.span - 1) > 12;
 }
 
 
-VizPrez.prototype.initializeLayout = function(zoneWrapper, scene) {
+VisPres.prototype.initializeLayout = function(zoneWrapper, scene) {
   var layout = scene.layout;
   layout = layout.sort(function(a,b) { return a.zone - b.zone });
   removeAllChildNodes(zoneWrapper);

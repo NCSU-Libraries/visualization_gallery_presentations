@@ -1,5 +1,5 @@
 function config() {
-  var conf = new VizPrezConfig();
+  var conf = new VisPresConfig();
 
   // *** No edits above here ***
 

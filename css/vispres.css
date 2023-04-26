@@ -3,7 +3,7 @@
 
 /* Zone definitions, etc. */
 
-.vizstudio {
+.visualization_gallery {
   width: 100%;
   height: 1080px;
   margin: 0 auto;
@@ -14,7 +14,7 @@
   color:  white;
 }
 
-#vizprez {
+#vispres {
   background:  url('../media/images/default.png') repeat-x;
 }
 

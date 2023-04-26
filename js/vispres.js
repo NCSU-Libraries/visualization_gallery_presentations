@@ -1,13 +1,13 @@
-// ** VizPrezConfig **
-// VizPrezConfig handles configuration for VizPrez
+// ** VisPresConfig **
+// VisPresConfig handles configuration for VisPres
 
-function VizPrezConfig() {
+function VisPresConfig() {
   this.scenes = [];
   this.transitionInterval = null;
   // We can add more config attributes later
 }
 
-VizPrezConfig.prototype.addScene = function(sceneConfig) {
+VisPresConfig.prototype.addScene = function(sceneConfig) {
   if (sceneConfig.layouts) {
     sceneConfig.layouts.sort(function(a,b) { return a.zone - b.zone });
   }
@@ -15,10 +15,10 @@ VizPrezConfig.prototype.addScene = function(sceneConfig) {
 }
 
 
-// ** VizPrez **
-// VizPrez is the presentation proper
+// ** VisPres **
+// VisPres is the presentation proper
 
-function VizPrez(selector, config) {
+function VisPres(selector, config) {
   this.root = document.querySelector(selector);
 
   if (!this.root) {
@@ -41,7 +41,7 @@ function VizPrez(selector, config) {
 
 // configuration and initialization
 
-VizPrez.prototype.initialize = function() {
+VisPres.prototype.initialize = function() {
   this.setDefaults();
   this.setRootStyles();
   this.initializeZoneWrappers();
@@ -50,7 +50,7 @@ VizPrez.prototype.initialize = function() {
 }
 
 
-VizPrez.prototype.setDefaults = function() {
+VisPres.prototype.setDefaults = function() {
   this.started = false;
   this.transitioning = false;
   this.sceneIndex = 0;
@@ -69,7 +69,7 @@ VizPrez.prototype.setDefaults = function() {
 }
 
 
-VizPrez.prototype.setRootStyles = function() {
+VisPres.prototype.setRootStyles = function() {
   // if (this.config.backgroundColor) {
   //   this.root.style.background = this.config.backgroundColor;
   // }
@@ -80,16 +80,19 @@ VizPrez.prototype.setRootStyles = function() {
 }
 
 
-VizPrez.prototype.initializeZoneWrappers = function() {
-  this.zoneWrappers = this.root.querySelectorAll('.zone-wrapper');
-  this.zoneWrapperTop = this.zoneWrappers[this.zoneWrapperTopIndex];
-  this.zoneWrapperNext = this.zoneWrappers[this.zoneWrapperNextIndex];
+VisPres.prototype.initializeZoneWrappers = function() {
+  // Delete everything in this.root first
+  removeAllChildNodes(this.root);
+  this.zoneWrapperTop = htmlToElement('<div class="zone-wrapper to-fade-in" id="zone-wrapper-1"></div>');
+  this.zoneWrapperNext = htmlToElement('<div class="zone-wrapper to-fade-in" id="zone-wrapper-2"></div>');
+  this.root.appendChild(this.zoneWrapperTop);
+  this.root.appendChild(this.zoneWrapperNext);
   this.zoneWrapperTop.style.zIndex = 1;
   this.zoneWrapperNext.style.zIndex = 0;
 }
 
 
-VizPrez.prototype.initializeScenes = function() {
+VisPres.prototype.initializeScenes = function() {
   this.scenes = this.config.scenes;
   console.log(this.scenes);
 
@@ -108,13 +111,13 @@ VizPrez.prototype.initializeScenes = function() {
 
 // Presentation control
 
-VizPrez.prototype.incrementSceneIndex = function() {
+VisPres.prototype.incrementSceneIndex = function() {
   // this.sceneIndex = increment(this.sceneIndex, this.scenes.length - 1);
   this.sceneIndex = (this.sceneIndex + 1) % this.scenes.length;
 }
 
 
-VizPrez.prototype.loadNext = function() {
+VisPres.prototype.loadNext = function() {
   var scene = this.scenes[this.sceneIndex];
   this.initializeLayout(this.zoneWrapperNext, scene);
   this.loadContent(this.zoneWrapperNext, scene);
@@ -123,7 +126,7 @@ VizPrez.prototype.loadNext = function() {
 }
 
 
-VizPrez.prototype.loadPrev = function() {
+VisPres.prototype.loadPrev = function() {
   // At this point the next scene has already been loaded, and this.sceneIndex has been incremented to the one after
   // That means that this.sceneIndex is 2 past the current scene's index
   // So to load the previous one, you need to set that number back by 3
@@ -140,7 +143,7 @@ VizPrez.prototype.loadPrev = function() {
 }
 
 
-VizPrez.prototype.start = function() {
+VisPres.prototype.start = function() {
   var _this = this;
   // this.loadNext();
   this.restartChildVideoPlayers(this.zoneWrapperTop);
@@ -166,7 +169,7 @@ VizPrez.prototype.start = function() {
 
 // NOTE: this.sceneIndex at this point is the index of the scene to be loaded in the background, not the one about to be displayed.
 // the current scene use modulo(this.sceneIndex -1, this.scenes.length)
-VizPrez.prototype.advance = function(options) {
+VisPres.prototype.advance = function(options) {
   options ||= {};
   var skip = options.skip || false;
   var back = options.back || false;
@@ -224,14 +227,14 @@ VizPrez.prototype.advance = function(options) {
 }
 
 
-VizPrez.prototype.reverse = function() {
+VisPres.prototype.reverse = function() {
   console.log('reverse');
   this.loadPrev();
   this.advance({skip: true});
 }
 
 
-VizPrez.prototype.enableKeyboardConrol = function() {
+VisPres.prototype.enableKeyboardConrol = function() {
   var _this = this;
   document.addEventListener('keydown', function(event) {
     var keyCode = event.keyCode;
@@ -274,7 +277,7 @@ VizPrez.prototype.enableKeyboardConrol = function() {
 
 // Scene controls
 
-VizPrez.prototype.initializeLayout = function(zoneWrapper, scene) {
+VisPres.prototype.initializeLayout = function(zoneWrapper, scene) {
   var layout = scene.layout;
 
   layout = layout.sort(function(a,b) { return a.zone - b.zone });
@@ -329,7 +332,7 @@ VizPrez.prototype.initializeLayout = function(zoneWrapper, scene) {
   }
 }
 
-VizPrez.prototype.loadContent = function(zoneWrapper, scene) {
+VisPres.prototype.loadContent = function(zoneWrapper, scene) {
   console.log(scene);
 
   var layout = scene.layout;
@@ -437,7 +440,7 @@ VizPrez.prototype.loadContent = function(zoneWrapper, scene) {
 
 // Scene auto-advance controls 
 
-VizPrez.prototype.checkElementAutoAdvance = function(element) {
+VisPres.prototype.checkElementAutoAdvance = function(element) {
 
   console.log(element);
 
@@ -466,7 +469,7 @@ VizPrez.prototype.checkElementAutoAdvance = function(element) {
 }
 
 
-VizPrez.prototype.mediaTimeAdvance = function(mediaObject, time) {
+VisPres.prototype.mediaTimeAdvance = function(mediaObject, time) {
   console.log('mediaTimeAdvance');
   console.log(mediaObject);
 
@@ -484,7 +487,7 @@ VizPrez.prototype.mediaTimeAdvance = function(mediaObject, time) {
 }
 
 
-VizPrez.prototype.intervalAdvance = function(interval) {
+VisPres.prototype.intervalAdvance = function(interval) {
   var _this = this;
   setTimeout(function() {
     _this.advance();
@@ -492,7 +495,7 @@ VizPrez.prototype.intervalAdvance = function(interval) {
 }
 
 
-VizPrez.prototype.mediaAdvance = function(mediaObject) {
+VisPres.prototype.mediaAdvance = function(mediaObject) {
   var _this = this;
   mediaObject.addEventListener('ended', function() {
     _this.advance();
@@ -502,13 +505,13 @@ VizPrez.prototype.mediaAdvance = function(mediaObject) {
 
 // Content controls
 
-VizPrez.prototype.loadVideo = function(wrapper, src) {
+VisPres.prototype.loadVideo = function(wrapper, src) {
   var player = wrapper.querySelector('video');
   player.src = src;
 }
 
 
-VizPrez.prototype.loadImage = function(wrapper, src) {
+VisPres.prototype.loadImage = function(wrapper, src) {
   // console.log(wrapper);
 
   var img = wrapper.querySelector('img');
@@ -516,7 +519,7 @@ VizPrez.prototype.loadImage = function(wrapper, src) {
 }
 
 
-VizPrez.prototype.restartChildVideoPlayers = function(element) {
+VisPres.prototype.restartChildVideoPlayers = function(element) {
   var players = element.querySelectorAll('video');
   players.forEach(function(player) { pause(player); });
   players.forEach(function(player) { player.currentTime = 0; });
@@ -524,7 +527,7 @@ VizPrez.prototype.restartChildVideoPlayers = function(element) {
 }
 
 
-VizPrez.prototype.startQueuedSlideshows = function() {
+VisPres.prototype.startQueuedSlideshows = function() {
   if (this.queuedSlideshows.length > 0) {
     this.queuedSlideshows.forEach(function(slideshow) {
       slideshow.cycleImages();
@@ -534,7 +537,7 @@ VizPrez.prototype.startQueuedSlideshows = function() {
 }
 
 
-VizPrez.prototype.playPause = function(element) {
+VisPres.prototype.playPause = function(element) {
   var players;
 
   if (element) {
