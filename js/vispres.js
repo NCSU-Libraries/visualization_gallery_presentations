@@ -60,6 +60,7 @@ VisPres.prototype.setDefaults = function() {
   this.defaultGrid = this.config.defaultGrid || null; // null default will use 12-zone grid
   this.loopMedia = (this.config.loopMedia !== false) ? true : false
   this.queuedSlideshows = [];
+  this.backgroundColor = this.config.backgroundColor || '#000';
   if (this.config.transitionInterval === 0) {
     this.transitionInterval = 0;
   }
@@ -170,18 +171,12 @@ VisPres.prototype.start = function() {
 // NOTE: this.sceneIndex at this point is the index of the scene to be loaded in the background, not the one about to be displayed.
 // the current scene use modulo(this.sceneIndex -1, this.scenes.length)
 VisPres.prototype.advance = function(options) {
-  options ||= {};
-  var skip = options.skip || false;
-  var back = options.back || false;
-
-  console.log('advance');
-  console.log(this.sceneIndex);
-
-  this.transitioning = true;
   var _this = this;
-
+  options ||= {};
+  let skip = options.skip || false;
+  let back = options.back || false;
   let transitionInterval = this.transitionInterval;
-
+  
   if (this.nextScene.transitionInterval === 0) {
    transitionInterval = 0;
   }
@@ -189,16 +184,14 @@ VisPres.prototype.advance = function(options) {
    transitionInterval = this.nextScene.transitionInterval;
   }
 
-  // // this.loadContent(this.zoneWrapperNext);
+  this.transitioning = true;
   this.zoneWrapperNext.style.opacity = 0;
   this.zoneWrapperNext.style.zIndex = 1000;
   this.zoneWrapperTop.style.zIndex = 0;
-  
   this.restartChildVideoPlayers(this.zoneWrapperNext);
 
   if (skip) {
-    console.log('skip');
-    console.log(this.nextScene.startTime);
+    console.log('skip to ' + this.nextScene.startTime);
     
     if (this.mediaTimeAdvanceInterval) {
       clearInterval(this.mediaTimeAdvanceInterval);
@@ -208,22 +201,45 @@ VisPres.prototype.advance = function(options) {
   let currentSceneIndex = modulo(this.sceneIndex - 1, this.scenes.length);
 
   fadeIn(this.zoneWrapperNext, transitionInterval, function() {
-    var newNext = _this.zoneWrapperTop;
-    var newTop = _this.zoneWrapperNext;
+    let oldTop = _this.zoneWrapperTop;
+    let newNext = oldTop;
+    let newTop = _this.zoneWrapperNext;
+
+    if (newTop.hasAttribute('data-modscene')) {
+      _this.finalizeModScene(newTop, oldTop);
+    }
+
     _this.zoneWrapperTop = newTop;
     _this.zoneWrapperNext = newNext;
-
-    //
     _this.zoneWrapperNext.style.opacity = 0;
     _this.zoneWrapperNext.style.zIndex = 1000;
     _this.zoneWrapperTop.style.zIndex = 0;
-    //
-
     _this.loadNext();
     _this.transitioning = false;
     _this.checkElementAutoAdvance(newTop);
   });
   this.startQueuedSlideshows();
+}
+
+
+VisPres.prototype.finalizeModScene = function(targetZoneWrapper, sourceZoneWrapper) {
+  var _this = this;
+  var emptyTargetZones = targetZoneWrapper.querySelectorAll('.zone.empty');
+
+  emptyTargetZones.forEach((zone) => {
+    let targetSpan = zoneSpanFromElement(zone);
+    let zoneNum = zoneNumberFromElement(zone);
+    sourceZone = sourceZoneWrapper.querySelector('.zone-' + zoneNum);
+    console.log(sourceZone);
+    let sourceSpan = zoneSpanFromElement(sourceZone);
+    if (targetSpan == sourceSpan) {
+      console.log('DOING IT!');
+      let sourceWrapper = sourceZone.querySelector('.wrapper');
+      if (sourceWrapper) {
+        zone.appendChild(sourceWrapper);
+      }
+    }
+  });
 }
 
 
@@ -278,30 +294,32 @@ VisPres.prototype.enableKeyboardConrol = function() {
 // Scene controls
 
 VisPres.prototype.initializeLayout = function(zoneWrapper, scene) {
-  var layout = scene.layout;
-
-  layout = layout.sort(function(a,b) { return a.zone - b.zone });
+  var layout = scene.layout.sort(function(a,b) { return a.zone - b.zone });
   
-  // TODO: Support modification scenes (replace content in specific zones rather than replacing the entire scene)
-  removeAllChildNodes(zoneWrapper);
-
   if (!scene.grid) {
     scene.grid = this.defaultGrid;
   }
 
-  if (scene.modify) {
+  if (scene.modScene) {
+    let emptyZones = this.getEmptyZones(scene);
+    for (i=0; i < emptyZones.length; i++) {
+      layout.push( { zone: emptyZones[i], empty: true } )
+    }
+  }
 
+  var layout = scene.layout.sort(function(a,b) { return a.zone - b.zone });
+
+  removeAllChildNodes(zoneWrapper);
+
+  if (scene.modScene) {
+    zoneWrapper.style.backgroundColor = null;
   }
   else if (scene.backgroundColor) {
     zoneWrapper.style.backgroundColor = scene.backgroundColor;
   }
-  else if (this.config.backgroundColor) {
-    zoneWrapper.style.background = this.config.backgroundColor;
-  }
   else {
-    zoneWrapper.style.backgroundColor = null;
+    zoneWrapper.style.backgroundColor = this.backgroundColor;
   }
-
 
   if (scene.backgroundImage) {
     zoneWrapper.style.backgroundImage = "url('" + scene.backgroundImage + "')";
@@ -319,25 +337,60 @@ VisPres.prototype.initializeLayout = function(zoneWrapper, scene) {
 
   for (i = 0; i < layout.length; i++) {
     let zoneConf = layout[i];
+
     let zoneId = "zone-" + zoneConf.zone;
     let zoneClasses = ['zone', zoneId];
+
     if (zoneConf.span) {
       zoneClasses.push("span-" + zoneConf.span);
     }
+    
+    if (zoneConf.empty) {
+      zoneClasses.push('empty');
+    }
+
     let zone = generateElement('div', zoneClasses);
-    // zone.id = zoneId;
-    let wrapper = generateElement('div', 'wrapper');
-    zone.appendChild(wrapper);
+
+    if (!zoneConf.empty) {
+      let wrapper = generateElement('div', 'wrapper');
+      zone.appendChild(wrapper);
+    }
+    
     zoneWrapper.appendChild(zone);
   }
 }
 
-VisPres.prototype.loadContent = function(zoneWrapper, scene) {
-  console.log(scene);
 
+VisPres.prototype.getEmptyZones = function(scene) {
+  var emptyZones = [];
+  let layout = scene.layout.sort(function(a,b) { return a.zone - b.zone });
+  let zoneCount = parseInt(scene.grid);
+  let occupiedZones = [];
+
+  for (i = 0; i < layout.length; i++) {
+    let zoneConf = layout[i];
+    let zone = zoneConf.zone;
+    let span = zoneConf.span || 1;
+    occupiedZones.push(zone);
+    for (ii = 1; ii < span; ii++) {
+      occupiedZones.push(zone + ii)
+    }
+  }
+
+  for (i = 1; i <= zoneCount; i++) {
+    if (!occupiedZones.includes(i)) {
+      emptyZones.push(i)
+    }
+  }
+
+  return emptyZones;
+}
+
+
+VisPres.prototype.loadContent = function(zoneWrapper, scene) {
   var layout = scene.layout;
   layout = layout.sort(function(a,b) { return a.zone - b.zone });
-  
+  zoneWrapper.removeAttribute('data-modscene');
   zoneWrapper.removeAttribute('data-auto-advance-media-id');
   zoneWrapper.removeAttribute('data-auto-advance-time');
   zoneWrapper.removeAttribute('data-auto-advance-media-time');
@@ -352,22 +405,25 @@ VisPres.prototype.loadContent = function(zoneWrapper, scene) {
     }
   }
 
+  if (scene.modScene) {
+    zoneWrapper.setAttribute('data-modscene', 'true');
+  }
+
   var imgHtml = '<img src="">';
   var videoHtml = '<video src="" class="paused"></video>';
   var divHtml = '<div class="zone-content-html"></div>';
+  var emptyHtml = '<div class="zone-content-empty"></div>';
 
   for (var i = 0; i < layout.length; i++) {
     var zoneConf = layout[i];
-    
     zoneConf.loop ||= this.loopMedia;
-
     var zoneId = "zone-" + zoneConf.zone;
     var zoneSelector = '.zone.' + zoneId;
     var zone = zoneWrapper.querySelector(zoneSelector);
 
     if (zone) {
-      var wrapper = zone.querySelector('.wrapper');
-      var el;
+      let wrapper = zone.querySelector('.wrapper');
+      let el;
 
       switch (zoneConf.contentType) {
       case 'video':
@@ -434,16 +490,12 @@ VisPres.prototype.loadContent = function(zoneWrapper, scene) {
     }
   }
 
-  // console.log(scene.callback);
 }
 
 
 // Scene auto-advance controls 
 
 VisPres.prototype.checkElementAutoAdvance = function(element) {
-
-  console.log(element);
-
   if (element.hasAttribute('data-auto-advance-time')) {
     let time = parseFloat(element.getAttribute('data-auto-advance-time'));
 
