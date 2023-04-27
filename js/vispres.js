@@ -67,6 +67,14 @@ VisPres.prototype.setDefaults = function() {
   else {
     this.transitionInterval = this.config.transitionInterval || 1000;
   }
+  // NOT THIS: this.scenes = this.config.scenes;
+  // INSTEAD: deep copy config.scenes to this.scenes
+  this.scenes = [];
+  for (const scene of this.config.scenes) {
+    this.scenes.push(scene);
+  }
+
+  this.processScenes();
 }
 
 
@@ -77,6 +85,29 @@ VisPres.prototype.setRootStyles = function() {
 
   if (this.config.fontColor) {
     this.root.style.color = this.config.fontColor;
+  }
+}
+
+
+// Make some values explicit and  fix inconsistencies in layout
+VisPres.prototype.processScenes = function() {
+  for (let i = 0; i < this.scenes.length; i++) {
+    let thisScene = this.scenes[i];
+    let nextScene = (i == this.scenes.length - 1) ? null : this.scenes[i + 1];
+    let prevScene = (i == 0) ? null : this.scenes[i - 1];
+
+    // add grid
+    if (!thisScene.grid) {
+      thisScene.grid = this.defaultGrid;
+    }
+
+    // check modScenes
+    if (thisScene.modScene) {
+      // unser modScene of first scene or grids do not match
+      if (!prevScene || thisScene.grid != prevScene.grid) {
+        thisScene.modScene = false;
+      }
+    }
   }
 }
 
@@ -94,9 +125,6 @@ VisPres.prototype.initializeZoneWrappers = function() {
 
 
 VisPres.prototype.initializeScenes = function() {
-  this.scenes = this.config.scenes;
-  console.log(this.scenes);
-
   let scene1 = this.scenes[this.sceneIndex];
   this.initializeLayout(this.zoneWrapperTop, scene1);
   this.loadContent(this.zoneWrapperTop, scene1);
@@ -133,9 +161,6 @@ VisPres.prototype.loadPrev = function() {
   // So to load the previous one, you need to set that number back by 3
   var indexMinus2 = modulo((this.sceneIndex - 3), this.scenes.length);
   this.sceneIndex = (indexMinus2 >= 0) ? indexMinus2 : ((this.scenes.length - 1) + indexMinus2);
-  
-  console.log("loadPrev " + this.sceneIndex);
-
   var scene = this.scenes[this.sceneIndex];
   this.initializeLayout(this.zoneWrapperNext, scene);
   this.loadContent(this.zoneWrapperNext, scene);
@@ -146,7 +171,6 @@ VisPres.prototype.loadPrev = function() {
 
 VisPres.prototype.start = function() {
   var _this = this;
-  // this.loadNext();
   this.restartChildVideoPlayers(this.zoneWrapperTop);
   this.transitioning = true;
 
@@ -160,7 +184,6 @@ VisPres.prototype.start = function() {
   this.startQueuedSlideshows();
   
   if (this.masterAudio) {
-    console.log(this.masterAudio);
     this.playPause(this.masterAudio);
   }
 
@@ -176,7 +199,8 @@ VisPres.prototype.advance = function(options) {
   let skip = options.skip || false;
   let back = options.back || false;
   let transitionInterval = this.transitionInterval;
-  
+  let currentSceneIndex = modulo(this.sceneIndex - 1, this.scenes.length);
+
   if (this.nextScene.transitionInterval === 0) {
    transitionInterval = 0;
   }
@@ -189,16 +213,13 @@ VisPres.prototype.advance = function(options) {
   this.zoneWrapperNext.style.zIndex = 1000;
   this.zoneWrapperTop.style.zIndex = 0;
   this.restartChildVideoPlayers(this.zoneWrapperNext);
-
+  
   if (skip) {
-    console.log('skip to ' + this.nextScene.startTime);
-    
+    console.log('skip to scene index ' + currentSceneIndex);
     if (this.mediaTimeAdvanceInterval) {
       clearInterval(this.mediaTimeAdvanceInterval);
     }
   }
-
-  let currentSceneIndex = modulo(this.sceneIndex - 1, this.scenes.length);
 
   fadeIn(this.zoneWrapperNext, transitionInterval, function() {
     let oldTop = _this.zoneWrapperTop;
@@ -226,17 +247,39 @@ VisPres.prototype.finalizeModScene = function(targetZoneWrapper, sourceZoneWrapp
   var _this = this;
   var emptyTargetZones = targetZoneWrapper.querySelectorAll('.zone.empty');
 
-  emptyTargetZones.forEach((zone) => {
-    let targetSpan = zoneSpanFromElement(zone);
+  emptyTargetZones.forEach(zone => {
+    // let targetSpan = zoneSpanFromElement(zone);
     let zoneNum = zoneNumberFromElement(zone);
-    sourceZone = sourceZoneWrapper.querySelector('.zone-' + zoneNum);
-    console.log(sourceZone);
-    let sourceSpan = zoneSpanFromElement(sourceZone);
-    if (targetSpan == sourceSpan) {
-      console.log('DOING IT!');
+    let sourceZone = sourceZoneWrapper.querySelector('.zone-' + zoneNum);
+
+    if (sourceZone) {
       let sourceWrapper = sourceZone.querySelector('.wrapper');
-      if (sourceWrapper) {
-        zone.appendChild(sourceWrapper);
+      let sourceSpan = zoneSpanFromElement(sourceZone);
+
+      if (sourceSpan == 1) {
+        if (sourceWrapper) {
+          zone.appendChild(sourceWrapper);
+        }
+      }
+      else {
+        let allowSpan = true;
+        let emptyZoneNums = Array.from(emptyTargetZones).map(z => zoneNumberFromElement(z));
+
+        for (let i = 1; i < sourceSpan; i++) {
+          let testZone = zoneNum + 1;
+          if (!emptyZoneNums.includes(testZone)) {
+            allowSpan = false;
+            break;
+          }
+        }
+
+        if (allowSpan) {
+          zone.classList.add('span-' + sourceSpan);
+          
+          if (sourceWrapper) {
+            zone.appendChild(sourceWrapper);
+          }
+        }
       }
     }
   });
@@ -295,14 +338,10 @@ VisPres.prototype.enableKeyboardConrol = function() {
 
 VisPres.prototype.initializeLayout = function(zoneWrapper, scene) {
   var layout = scene.layout.sort(function(a,b) { return a.zone - b.zone });
-  
-  if (!scene.grid) {
-    scene.grid = this.defaultGrid;
-  }
 
   if (scene.modScene) {
     let emptyZones = this.getEmptyZones(scene);
-    for (i=0; i < emptyZones.length; i++) {
+    for (let i=0; i < emptyZones.length; i++) {
       layout.push( { zone: emptyZones[i], empty: true } )
     }
   }
@@ -326,7 +365,7 @@ VisPres.prototype.initializeLayout = function(zoneWrapper, scene) {
   }
   
   // Reset zone wrapper classes
-  for (var i = 0; i < this.grids.length; i++) {
+  for (let i = 0; i < this.grids.length; i++) {
     let classname = 'grid-' + this.grids[i];
     zoneWrapper.classList.remove(classname);
   }
@@ -335,9 +374,8 @@ VisPres.prototype.initializeLayout = function(zoneWrapper, scene) {
     zoneWrapper.classList.add('grid-' + scene.grid);
   }
 
-  for (i = 0; i < layout.length; i++) {
+  for (let i = 0; i < layout.length; i++) {
     let zoneConf = layout[i];
-
     let zoneId = "zone-" + zoneConf.zone;
     let zoneClasses = ['zone', zoneId];
 
@@ -367,17 +405,17 @@ VisPres.prototype.getEmptyZones = function(scene) {
   let zoneCount = parseInt(scene.grid);
   let occupiedZones = [];
 
-  for (i = 0; i < layout.length; i++) {
+  for (let i = 0; i < layout.length; i++) {
     let zoneConf = layout[i];
     let zone = zoneConf.zone;
     let span = zoneConf.span || 1;
     occupiedZones.push(zone);
-    for (ii = 1; ii < span; ii++) {
+    for (let ii = 1; ii < span; ii++) {
       occupiedZones.push(zone + ii)
     }
   }
 
-  for (i = 1; i <= zoneCount; i++) {
+  for (let i = 1; i <= zoneCount; i++) {
     if (!occupiedZones.includes(i)) {
       emptyZones.push(i)
     }
@@ -412,9 +450,8 @@ VisPres.prototype.loadContent = function(zoneWrapper, scene) {
   var imgHtml = '<img src="">';
   var videoHtml = '<video src="" class="paused"></video>';
   var divHtml = '<div class="zone-content-html"></div>';
-  var emptyHtml = '<div class="zone-content-empty"></div>';
 
-  for (var i = 0; i < layout.length; i++) {
+  for (let i = 0; i < layout.length; i++) {
     var zoneConf = layout[i];
     zoneConf.loop ||= this.loopMedia;
     var zoneId = "zone-" + zoneConf.zone;
@@ -522,13 +559,10 @@ VisPres.prototype.checkElementAutoAdvance = function(element) {
 
 
 VisPres.prototype.mediaTimeAdvance = function(mediaObject, time) {
-  console.log('mediaTimeAdvance');
-  console.log(mediaObject);
-
   var _this = this;
-
   time = time / 1000;
-  console.log(time);
+
+  console.log('mediaTimeAdvance: ' + time);
 
   this.mediaTimeAdvanceInterval = setInterval(function() {
     if (mediaObject.currentTime >= time) {
@@ -564,8 +598,6 @@ VisPres.prototype.loadVideo = function(wrapper, src) {
 
 
 VisPres.prototype.loadImage = function(wrapper, src) {
-  // console.log(wrapper);
-
   var img = wrapper.querySelector('img');
   img.src = src;
 }
@@ -573,15 +605,15 @@ VisPres.prototype.loadImage = function(wrapper, src) {
 
 VisPres.prototype.restartChildVideoPlayers = function(element) {
   var players = element.querySelectorAll('video');
-  players.forEach(function(player) { pause(player); });
-  players.forEach(function(player) { player.currentTime = 0; });
-  players.forEach(function(player) { play(player); });
+  players.forEach(player => { pause(player); });
+  players.forEach(player => { player.currentTime = 0; });
+  players.forEach(player => { play(player); });
 }
 
 
 VisPres.prototype.startQueuedSlideshows = function() {
   if (this.queuedSlideshows.length > 0) {
-    this.queuedSlideshows.forEach(function(slideshow) {
+    this.queuedSlideshows.forEach(slideshow => {
       slideshow.cycleImages();
     });
     this.queuedSlideshows = [];
@@ -593,28 +625,27 @@ VisPres.prototype.playPause = function(element) {
   var players;
 
   if (element) {
-
     let name = element.tagName.toLowerCase();
+
     if (name == 'audio' || element.tagName == 'video') {
-      // console.log(element);
       players = [element];
     }
     else {
       players = element.querySelectorAll('video,audio');
     }
+
   }
   else {
     players = this.zoneWrapperTop.querySelectorAll('video,audio');
     players = Array.prototype.slice.call(players);
+
     if (this.masterAudio) {
       players.push(this.masterAudio);
     }
+
   }
 
-  // console.log(players);
-
-  players.forEach(function(player) {
-    console.log(player);
+  players.forEach(player => {
     playPause(player);
   });
 }

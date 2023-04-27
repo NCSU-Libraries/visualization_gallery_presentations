@@ -9,10 +9,14 @@
 /_work/**
 
 # Ignore media files
-/media/audio/**
-!/media/audio/.keep
 /media/video/**
 !/media/video/.keep
+!/media/video/demo
+!/media/video/demo/**
+
+/media/audio/**
+!/media/audio/.keep
+
 /media/images/**
 !/media/images/.keep
 !/media/images/curtains.png
