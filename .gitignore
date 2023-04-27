@@ -23,13 +23,6 @@
 !/media/images/readme
 !/media/images/readme/**
 
-# Ignore demo
-/js/demo
-/*/demo
-/demo.html
-/*demo.html
-/*demo/**
-
 # ignore zips
 **/*.zip
 *.zip
