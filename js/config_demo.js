@@ -3,11 +3,8 @@ function config() {
 
   // *** No edits above here ***
 
-  // Set transition interval (fade time) in milliseconds
   conf.transitionInterval = 500;
-  // Set default grid  - all examples in this demo use the 8-zone grid
   conf.defaultGrid = 8;
-
 
   conf.addScene({
     layout: [
@@ -22,7 +19,6 @@ function config() {
     ]
   })
 
-
   conf.addScene({
     modScene: true,
     layout: [
@@ -32,7 +28,6 @@ function config() {
       { zone: 7, contentType: 'image', filePath: 'media/images/demo/demo2.png' },
     ]
   })
-
 
   conf.addScene({
     grid: 12,
@@ -48,7 +43,6 @@ function config() {
     ]
   })
 
-
   conf.addScene({
     modScene: true,
     grid: 12,
@@ -59,11 +53,6 @@ function config() {
       { zone: 10, contentType: 'image', filePath: 'media/images/demo/demo4.png' },
     ]
   })
-
-
-
-
-
 
   // *** No edits below here ***
   return conf;

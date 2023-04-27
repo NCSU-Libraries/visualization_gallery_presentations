@@ -27,10 +27,13 @@
     <script src="js/my.js"></script>
   -->
 
-  <!-- load core presentation javascript -->
+  <!-- Load utility functions first - these are used by core JS but adding them here makes them available to callbacks in custom JS -->
   <script type="text/javascript" src="js/utils.js"></script>
+  <!-- Load configuration -->
   <script type="text/javascript" src="js/config.js"></script>
+  <!-- Load core presentation library -->
   <script type="text/javascript" src="js/vispres.js"></script>
+  <!-- Load transform_scale to fit content on smaller displays for development -->
   <script type="text/javascript" src="js/transform_scale.js"></script>
 
   <!-- initialize the presentation -->

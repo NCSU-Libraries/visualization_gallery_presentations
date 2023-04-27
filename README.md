@@ -7,19 +7,18 @@ An HTML/CSS/Javascript framework for creating multimedia presentations in the Cy
 
 ## Running a presentation
 
-### Demo presentation (in Google Drive)
+### Demo presentation
 
-A demo presentation is avaialble for local testing, experimentation, etc. The presentation runs in Chrome\* and should work on any computer (slower machines may have issues with video quality). Content will scale to fit your display.
+A simple demo presentation is included in this repository
 
-1. <a href="https://drive.google.com/file/d/1K1UaQbxVNHEbwRK1D84lQqUnlFO68uUw/view?usp=sharinghttps://drive.google.com/file/d/1K1UaQbxVNHEbwRK1D84lQqUnlFO68uUw/view?usp=sharing" target="_blank">Download the demo presentation  \(**vizstudio_presentations_demo.zip**\) from Google drive</a>
-2. Unzip the file to a convenient location on your computer.
+1. Download or clone this Github repo.
 3. Open Google Chrome.*
 4. Press F11 to enter full screen mode.
 5. Open the file **demo.html** in Chrome.
 6. Press any key to begin the presentation. Note that the display will scale down to fit your display, so things will look small.
 7. Press N to move to the next scene, or B to move back to the previous scene.
 
-*\*It should also work in other browsers but is only consistently tested in Chrome*
+*\* It should also work in other browsers but is only consistently tested in Chrome*
 
 ### Keyboard controls
 
